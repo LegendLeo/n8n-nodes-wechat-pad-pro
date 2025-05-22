@@ -18,6 +18,8 @@ You need the following installed on your development machine:
   ```
 * Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
 
+<!-- ~/AppData/Local/Yarn/Data/global/node_modules/n8n -->
+
 ## Using this starter
 
 These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
