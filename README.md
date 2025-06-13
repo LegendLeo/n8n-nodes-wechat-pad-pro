@@ -1,48 +1,52 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n-nodes-wechat-pad-pro
 
-# n8n-nodes-starter
+[English](./README.en.md) | 简体中文
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+---
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+这是一个 n8n 社区节点，允许您在 n8n 工作流中使用 [WeChatPadPro](https://github.com/WeChatPadPro/WeChatPadPro)。
 
-## Prerequisites
+WeChatPadPro 是基于微信Pad协议的微信管理工具，可以用于实现微信消息的自动化收发和联系人、账号管理等功能。
 
-You need the following installed on your development machine:
+[n8n](https://n8n.io/) 是一个 [fair-code licensed](https://docs.n8n.io/reference/license/) 的工作流自动化平台。
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+[安装](#安装)  
+[操作](#操作)  
+[凭证](#凭证)
+[兼容性](#兼容性)
+[资源](#资源)
 
-<!-- ~/AppData/Local/Yarn/Data/global/node_modules/n8n -->
+## 安装
 
-## Using this starter
+请遵循 n8n 社区节点文档中的[安装指南](https://docs.n8n.io/integrations/community-nodes/installation/)。
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+## 操作
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm lint` to check for errors or `npm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+本节点支持以下操作：
 
-## More information
+**用户 (User)**
+*   获取个人资料信息
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+**消息 (Message)**
+*   发送文本消息
+*   发送图片消息
 
-## License
+## 凭证
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+要使用此节点，您需要配置 WeChatPadPro API 凭证。
+
+1.  **BaseUrl**: 您的 WeChatPadPro 服务的 URL 地址。
+2.  **AuthKey**: 您的 WeChatPadPro 服务的授权密钥。
+
+您需要自行搭建 WeChatPadPro 服务来获取这些凭证。
+
+## 兼容性
+
+*   **最低 n8n 版本**: 此节点遵循 n8n 的 `n8nNodesApiVersion: 1`，建议在最新的 n8n 版本上使用。
+*   **Node.js 版本**: 需要 `>=20.15` 版本。
+
+## 资源
+
+*   [n8n 社区节点文档](https://docs.n8n.io/integrations/#community-nodes)
+*   [WeChatPadPro 项目地址](https://github.com/WeChatPadPro/WeChatPadPro)
+*   [本项目 GitHub 仓库](https://github.com/LegendLeo/n8n-nodes-wechat-pad-pro)

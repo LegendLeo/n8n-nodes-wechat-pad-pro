@@ -99,7 +99,7 @@ export class WeChatPadPro implements INodeType {
 			},
 			// Send Text Message Fields
 			{
-				displayName: 'To User Name',
+				displayName: '消息接收方 ID',
 				name: 'toUserName',
 				type: 'string',
 				required: true,
@@ -110,10 +110,10 @@ export class WeChatPadPro implements INodeType {
 						operation: ['sendTextMessage', 'sendImageMessage'],
 					},
 				},
-				description: '接受消息方（微信 ID 或群聊 ID）',
+				description: '接受消息方 ID（微信 ID 或群聊 ID）',
 			},
 			{
-				displayName: 'Text Content',
+				displayName: '消息内容',
 				name: 'textContent',
 				type: 'string',
 				required: true,
@@ -124,10 +124,10 @@ export class WeChatPadPro implements INodeType {
 						operation: ['sendTextMessage'],
 					},
 				},
-				description: '文本内容',
+				description: '消息文本内容',
 			},
 			{
-				displayName: 'At WxId List',
+				displayName: 'At WxId 列表',
 				name: 'atWxIdList',
 				type: 'string',
 				default: '',
@@ -141,7 +141,7 @@ export class WeChatPadPro implements INodeType {
 			},
 			// Send Image Message Fields
 			{
-				displayName: 'Image Content (Base64)',
+				displayName: '图片内容 (Base64)',
 				name: 'imageContent',
 				type: 'string',
 				typeOptions: {
