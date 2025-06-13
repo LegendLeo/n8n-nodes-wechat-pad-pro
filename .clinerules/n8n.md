@@ -11,7 +11,10 @@ alwaysApply: false # 对于 n8n 项目，可设置为 true 以始终激活
 - **凭证**: 如需身份验证，请在 `credentials/MyExampleApi.credentials.ts` 中添加凭证文件。
 
 ## 参考资料
-- 使用 `context7` MCP 工具引入 n8n 官方文档作为开发参考。
+- 使用 `context7` 的 `get-library-docs` MCP 工具引入 n8n 官方文档（/n8n-io/n8n-docs）作为开发参考。
 
 ## 语言要求
 - 在所有交流、代码注释和功能描述中，请统一使用中文。
+
+## 文档规范
+- 更新 `README.md` 文件的时候，记得同步更新 `README.en.md` 文件。

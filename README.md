@@ -10,15 +10,12 @@ WeChatPadPro 是基于微信Pad协议的微信管理工具，可以用于实现�
 
 [n8n](https://n8n.io/) 是一个 [fair-code licensed](https://docs.n8n.io/reference/license/) 的工作流自动化平台。
 
-[安装](#安装)  
-[操作](#操作)  
-[凭证](#凭证)
-[兼容性](#兼容性)
-[资源](#资源)
-
 ## 安装
 
-请遵循 n8n 社区节点文档中的[安装指南](https://docs.n8n.io/integrations/community-nodes/installation/)。
+有两种安装此社区节点的方法：
+
+1.  **[通过 n8n 图形界面安装](https://docs.n8n.io/integrations/community-nodes/installation/gui-install/)**：在 n8n 的 "Community Nodes" 界面中搜索 `n8n-nodes-wechat-pad-pro` 并安装。
+2.  **[通过命令行手动安装](https://docs.n8n.io/integrations/community-nodes/installation/manual-install/)**：如果您的 n8n 实例不支持图形界面安装，可以手动安装。
 
 ## 操作
 

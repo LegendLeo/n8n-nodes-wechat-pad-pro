@@ -18,7 +18,10 @@ WeChatPadPro is a WeChat management tool based on the WeChat Pad protocol, which
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+There are two ways to install this community node:
+
+1.  **[Install via the n8n GUI](https://docs.n8n.io/integrations/community-nodes/installation/gui-install/)**: Search for `n8n-nodes-wechat-pad-pro` in the "Community Nodes" section of n8n and install it.
+2.  **[Manual installation via command line](https://docs.n8n.io/integrations/community-nodes/installation/manual-install/)**: If your n8n instance does not support GUI installation, you can install it manually.
 
 ## Operations
 
