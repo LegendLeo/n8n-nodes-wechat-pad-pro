@@ -12,7 +12,7 @@ export class WeChatPadPro implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'WeChatPadPro',
 		name: 'weChatPadPro',
-		icon: 'file:wechat.svg',
+		icon: 'file:wechatPadPro.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
