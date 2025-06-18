@@ -34,6 +34,12 @@ This node supports the following operations:
 *   Send Text Message
 *   Send Image Message
 
+**Trigger**
+*   **Receive New Message**: Triggers the workflow when a new message is received.
+    *   **Scene**:
+        *   `Receive Text Message`: Triggers only on text messages (msg_type == 1).
+        *   `Receive Image Message`: Triggers only on image messages (msg_type == 3).
+
 ## Credentials
 
 To use this node, you need to configure the WeChatPadPro API credentials.
