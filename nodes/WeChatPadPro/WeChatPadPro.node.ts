@@ -6,6 +6,12 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 	IHttpRequestMethods,
+	IDataObject,
+	INodeCredentialTestResult,
+	ICredentialTestFunctions,
+	ICredentialsDecrypted,
+	ICredentialDataDecryptedObject,
+	ApplicationError,
 } from 'n8n-workflow';
 
 export class WeChatPadPro implements INodeType {
@@ -26,6 +32,7 @@ export class WeChatPadPro implements INodeType {
 			{
 				name: 'weChatPadProApi',
 				required: true,
+				testedBy: 'testCredential',
 			},
 		],
 		properties: [
@@ -159,6 +166,42 @@ export class WeChatPadPro implements INodeType {
 			},
 		],
 	};
+	methods = {
+		credentialTest: {
+			async testCredential(
+				this: ICredentialTestFunctions,
+				credential: ICredentialsDecrypted,
+			): Promise<INodeCredentialTestResult> {
+				const { baseUrl, authKey } = credential.data as ICredentialDataDecryptedObject;
+
+				if (!baseUrl) {
+					throw new ApplicationError('BaseUrl is missing in credentials!');
+				}
+
+				const cleanBaseUrl = baseUrl.toString().replace(/\/$/, '');
+				const url = `${cleanBaseUrl}/user/GetProfile?key=${authKey}`;
+
+				try {
+					const response = (await this.helpers.request({
+						method: 'GET',
+						url,
+						json: true,
+					})) as IDataObject;
+
+					if (response.Code === 200) {
+						return { status: 'OK', message: '授权成功' };
+					} else {
+						return {
+							status: 'Error',
+							message: `授权失败，错误信息: ${response.Msg || '未知错误'}`,
+						};
+					}
+				} catch (error) {
+					return { status: 'Error', message: error.message };
+				}
+			},
+		},
+	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
@@ -205,7 +248,7 @@ export class WeChatPadPro implements INodeType {
 						};
 
 						if (atWxIdListRaw) {
-							msgItem.AtWxIdList = atWxIdListRaw.split(',').map(id => id.trim());
+							msgItem.AtWxIdList = atWxIdListRaw.split(',').map((id) => id.trim());
 						}
 
 						const body = {
