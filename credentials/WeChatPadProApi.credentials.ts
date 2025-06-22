@@ -26,17 +26,6 @@ export class WeChatPadProApi implements ICredentialType {
 			default: '',
 			required: true,
 			description: 'WeChatPadPro 服务的授权密钥',
-		},
-		{
-			displayName: 'WxID',
-			name: 'wxid',
-			type: 'string',
-			typeOptions: {
-				password: true,
-			},
-			default: '',
-			required: true,
-			description: '微信ID，通过登录后的个人信息数据获取，以wxid_开头，用于接收群聊消息判断标识',
-		},
+		}
 	];
 }
