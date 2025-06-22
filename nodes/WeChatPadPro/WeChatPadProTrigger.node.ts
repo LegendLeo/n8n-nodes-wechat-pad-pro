@@ -155,7 +155,6 @@ export class WeChatPadProTrigger implements INodeType {
 					if (scene === 'text' && msgType === 1) {
 						// 判断是否为群聊消息
 						const isGroupMessage = message.fromUserName?.includes('@chatroom');
-						console.log('message.fromUserName===', message.fromUserName, isGroupMessage)
 
 						if (!isGroupMessage) {
 							// 非群聊消息直接触发

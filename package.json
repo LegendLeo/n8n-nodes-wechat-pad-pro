@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-wechat-pad-pro",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "n8n node for WeChatPadPro, allowing you to automate WeChat messaging and interactions within your n8n workflows.",
   "keywords": [
     "n8n-community-node-package",

@@ -1,7 +1,5 @@
 # n8n-nodes-wechat-pad-pro
 
-[English](./README.en.md) | 简体中文
-
 ---
 
 这是一个 n8n 社区节点，允许您在 n8n 工作流中使用 [WeChatPadPro](https://github.com/WeChatPadPro/WeChatPadPro)。
