@@ -101,6 +101,12 @@ export class WeChatPadPro implements INodeType {
 						action: '发送图片消息',
 						description: '发送图片消息给指定联系人或群组',
 					},
+					{
+						name: '群发文本消息',
+						value: 'groupMassTextMessage',
+						action: '群发文本消息',
+						description: '群发文本消息给多个联系人或群组',
+					},
 				],
 				default: 'sendTextMessage',
 			},
@@ -128,7 +134,7 @@ export class WeChatPadPro implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['message'],
-						operation: ['sendTextMessage'],
+						operation: ['sendTextMessage', 'groupMassTextMessage'],
 					},
 				},
 				description: '消息文本内容',
@@ -163,6 +169,20 @@ export class WeChatPadPro implements INodeType {
 					},
 				},
 				description: '图片的 Base64 编码内容',
+			},
+			{
+				displayName: '接收方用户名列表',
+				name: 'toUserNameList',
+				type: 'string',
+				required: true,
+				default: '',
+				displayOptions: {
+					show: {
+						resource: ['message'],
+						operation: ['groupMassTextMessage'],
+					},
+				},
+				description: '接收消息的用户名列表，用逗号分隔（微信 ID 或群聊 ID）',
 			},
 		],
 	};
@@ -289,6 +309,42 @@ export class WeChatPadPro implements INodeType {
 						const options = {
 							method: 'POST' as IHttpRequestMethods,
 							url: `${baseUrl}/message/SendImageMessage`,
+							qs: {
+								key: authKey,
+							},
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: body,
+							json: true,
+						};
+
+						const responseData = await this.helpers.httpRequest(options);
+						returnData.push({ json: responseData });
+					}
+
+					if (operation === 'groupMassTextMessage') {
+						const textContent = this.getNodeParameter('textContent', i, '') as string;
+						const toUserNameListRaw = this.getNodeParameter('toUserNameList', i, '') as string;
+
+						// 解析用户名列表，用逗号分隔
+						const toUserNameList = toUserNameListRaw
+							.split(',')
+							.map((name) => name.trim())
+							.filter((name) => name.length > 0);
+
+						if (toUserNameList.length === 0) {
+							throw new NodeOperationError(this.getNode(), '接收方用户名列表不能为空');
+						}
+
+						const body = {
+							Content: textContent,
+							ToUserName: toUserNameList,
+						};
+
+						const options = {
+							method: 'POST' as IHttpRequestMethods,
+							url: `${baseUrl}/message/GroupMassMsgText`,
 							qs: {
 								key: authKey,
 							},
