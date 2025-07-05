@@ -4,9 +4,11 @@ import {
 	ITriggerFunctions,
 	NodeConnectionType,
 	NodeOperationError,
+	IHttpRequestOptions,
 } from 'n8n-workflow';
 import { parseStringPromise } from 'xml2js';
 import WebSocket from 'ws';
+import { Buffer } from 'buffer';
 
 export class WeChatPadProTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -42,6 +44,10 @@ export class WeChatPadProTrigger implements INodeType {
 						value: 'image',
 					},
 					{
+						name: '接收语音消息',
+						value: 'voice',
+					},
+					{
 						name: '其他事件',
 						value: 'other',
 					},
@@ -55,7 +61,7 @@ export class WeChatPadProTrigger implements INodeType {
 				type: 'options',
 				displayOptions: {
 					show: {
-						scene: ['text'],
+						scene: ['text', 'voice', 'image'],
 					},
 				},
 				options: [
@@ -84,7 +90,7 @@ export class WeChatPadProTrigger implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						scene: ['text'],
+						scene: ['text', 'voice', 'image'],
 						groupMessageRule: ['all', 'mention'],
 					},
 				},
@@ -135,6 +141,11 @@ export class WeChatPadProTrigger implements INodeType {
 					// 解析字段，并处理（原字段保留）
 					message.fromUserName = message.from_user_name?.str;
 					message.toUserName = message.to_user_name?.str;
+					message.msgContent = message.content?.str;
+					delete message.fromUserName;
+					delete message.toUserName;
+					delete message.content;
+					// 引用消息逻辑处理
 					if (message.msg_source) {
 						try {
 							const sourceData = await parseStringPromise(message.msg_source, {
@@ -144,6 +155,14 @@ export class WeChatPadProTrigger implements INodeType {
 								trim: true,
 							});
 							message.msgSource = sourceData?.msgsource;
+							const msgJson = await parseStringPromise(message.msgContent, {
+								explicitArray: false,
+								ignoreAttrs: true,
+								charkey: 'text',
+								trim: true,
+							});
+							message.contentJson = msgJson;
+							delete message.msg_source;
 						} catch (e) {
 							// 忽略 msg_source 解析错误
 						}
@@ -151,8 +170,7 @@ export class WeChatPadProTrigger implements INodeType {
 
 					// 检查消息是否符合触发条件
 					let shouldTrigger = false;
-
-					if (scene === 'text' && msgType === 1) {
+					if ([1, 3, 34].includes(msgType)) {
 						// 判断是否为群聊消息
 						const isGroupMessage = message.fromUserName?.includes('@chatroom');
 
@@ -180,8 +198,82 @@ export class WeChatPadProTrigger implements INodeType {
 								shouldTrigger = groupWhitelist.includes(message.fromUserName);
 							}
 						}
-					} else if (scene === 'image' && msgType === 3) {
-						shouldTrigger = true; // 图片消息保持原有逻辑
+					}
+					if (shouldTrigger && msgType === 3) {
+						try {
+							const bigImgUrl = `${baseUrl}/message/GetMsgBigImg?key=${authKey}`;
+							let startPos = 0;
+							let totalLen: number | null = null;
+							let imageData: Buffer[] = []; // 使用 Buffer 数组存储数据块
+
+							while (totalLen === null || startPos < totalLen) {
+								const requestBody: any = {
+									CompressType: 0,
+									FromUserName: message.FromUserName,
+									MsgId: message.msg_id,
+									Section: { DataLen: 65536, StartPos: startPos },
+									ToUserName: message.ToUserName,
+									TotalLen: totalLen === null ? undefined : totalLen,
+								};
+
+								const options: IHttpRequestOptions = {
+									method: 'POST',
+									url: bigImgUrl,
+									json: true,
+									body: requestBody,
+								};
+
+								const { Code, Data } = await this.helpers.httpRequest(options);
+
+								if (Code !== 200) {
+									this.logger.error(`WeChatPadPro Trigger: 获取图片分段失败，Code: ${Code}`);
+									break;
+								}
+
+								const dataBuffer = Data.Data.Buffer;
+								if (!dataBuffer) {
+									this.logger.error('WeChatPadPro Trigger: 响应中缺少图片数据');
+									break;
+								}
+								try {
+									const chunkData = Buffer.from(dataBuffer, 'base64');
+									if (chunkData.length === 0) {
+										this.logger.warn('WeChatPadPro Trigger: 接收到空数据块');
+										break;
+									}
+
+									imageData.push(chunkData);
+									const chunkSize = chunkData.length;
+									startPos += chunkSize;
+
+									if (totalLen === null) {
+										totalLen = Data?.TotalLen;
+										if (typeof totalLen !== 'number' || totalLen <= 0) {
+											this.logger.error('WeChatPadPro Trigger: 无效的图片总长度');
+											break;
+										}
+										this.logger.info(`WeChatPadPro Trigger: 图片总长度: ${totalLen} 字节`);
+									}
+
+									this.logger.info(`WeChatPadPro Trigger: 下载进度: ${startPos}/${totalLen}`);
+								} catch (e) {
+									this.logger.error(`WeChatPadPro Trigger: Base64解码失败: ${e.message}`);
+									break;
+								}
+							}
+
+							if (totalLen !== null && startPos === totalLen) {
+								const fullImageData = Buffer.concat(imageData);
+								message.msgContent = fullImageData.toString('base64');
+								this.logger.info(`WeChatPadPro Trigger: 图片下载完成，大小: ${fullImageData.length} 字节`);
+							} else {
+								this.logger.warn('WeChatPadPro Trigger: 图片下载未完成或遇到问题。');
+							}
+
+							delete message.img_buf;
+						} catch (error) {
+							this.logger.error(`WeChatPadPro Trigger: Error getting big image: ${error.message}`);
+						}
 					}
 
 					if (shouldTrigger || scene === 'other') {
