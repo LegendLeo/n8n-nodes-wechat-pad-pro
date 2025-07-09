@@ -9,6 +9,14 @@ import {
 import { parseStringPromise } from 'xml2js';
 import WebSocket from 'ws';
 import { Buffer } from 'buffer';
+import { silkToPcmBase64, silkToWavBase64 } from '../audioUtils';
+
+enum MsgType {
+	Text = 1,
+	Image = 3,
+	Voice = 34,
+	EmojiOrVideo = 47,
+}
 
 export class WeChatPadProTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -34,6 +42,7 @@ export class WeChatPadProTrigger implements INodeType {
 				displayName: '场景',
 				name: 'scene',
 				type: 'options',
+				// eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
 				options: [
 					{
 						name: '接收文本消息',
@@ -48,6 +57,14 @@ export class WeChatPadProTrigger implements INodeType {
 						value: 'voice',
 					},
 					{
+						name: '接收表情消息',
+						value: 'emoji',
+					},
+					{
+						name: '接收视频消息',
+						value: 'video',
+					},
+					{
 						name: '其他事件',
 						value: 'other',
 					},
@@ -59,11 +76,6 @@ export class WeChatPadProTrigger implements INodeType {
 				displayName: '群聊消息接收规则',
 				name: 'groupMessageRule',
 				type: 'options',
-				displayOptions: {
-					show: {
-						scene: ['text', 'voice', 'image'],
-					},
-				},
 				options: [
 					{
 						name: '接收全部消息',
@@ -72,6 +84,11 @@ export class WeChatPadProTrigger implements INodeType {
 					{
 						name: '接收@机器人消息',
 						value: 'mention',
+						displayOptions: {
+							show: {
+								scene: ['text'],
+							},
+						},
 					},
 					{
 						name: '不接收消息',
@@ -90,7 +107,7 @@ export class WeChatPadProTrigger implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						scene: ['text', 'voice', 'image'],
+						scene: ['text', 'voice', 'image', 'emoji', 'video'],
 						groupMessageRule: ['all', 'mention'],
 					},
 				},
@@ -155,14 +172,14 @@ export class WeChatPadProTrigger implements INodeType {
 								trim: true,
 							});
 							message.msgSource = sourceData?.msgsource;
+							delete message.msg_source;
 							const msgJson = await parseStringPromise(message.msgContent, {
 								explicitArray: false,
-								ignoreAttrs: true,
+								ignoreAttrs: false,
 								charkey: 'text',
 								trim: true,
 							});
-							message.contentJson = msgJson;
-							delete message.msg_source;
+							message.contentObj = msgJson;
 						} catch (e) {
 							// 忽略 msg_source 解析错误
 						}
@@ -170,7 +187,9 @@ export class WeChatPadProTrigger implements INodeType {
 
 					// 检查消息是否符合触发条件
 					let shouldTrigger = false;
-					if ([1, 3, 34].includes(msgType)) {
+					if (
+						[MsgType.Text, MsgType.Image, MsgType.Voice, MsgType.EmojiOrVideo].includes(msgType)
+					) {
 						// 判断是否为群聊消息
 						const isGroupMessage = message.fromUserName?.includes('@chatroom');
 
@@ -199,9 +218,9 @@ export class WeChatPadProTrigger implements INodeType {
 							}
 						}
 					}
-					if (shouldTrigger && msgType === 3) {
+					if (shouldTrigger) {
 						switch (msgType) {
-							case 3:
+							case MsgType.Image:
 								try {
 									const bigImgUrl = `${baseUrl}/message/GetMsgBigImg?key=${authKey}`;
 									let startPos = 0;
@@ -274,15 +293,45 @@ export class WeChatPadProTrigger implements INodeType {
 										this.logger.warn('WeChatPadPro Trigger: 图片下载未完成或遇到问题。');
 									}
 
-									delete message.img_buf;
+									delete message.img_buf; // 删除冗余数据
 								} catch (error) {
 									this.logger.error(
 										`WeChatPadPro Trigger: Error getting big image: ${error.message}`,
 									);
 								}
 								break;
-							case 34:
-								// TODO
+							case MsgType.Voice:
+								try {
+									const voiceB64 = message.img_buf.buffer;
+									const Data = { Base64: voiceB64 };
+									const Code = 200
+
+									if (Code === 200 && Data?.Base64) {
+										let silkBuffer = Buffer.from(voiceB64, 'base64');
+										try {
+											const pcmBase64 = await silkToPcmBase64(silkBuffer);
+											const wavBase64 = await silkToWavBase64(silkBuffer);
+											message.pcmData = pcmBase64;
+											message.msgContent = wavBase64;
+											this.logger.info(
+												`WeChatPadPro Trigger: 语音下载并转换为 WAV 格式完成，大小: ${message.msgContent.length} 字节`,
+											);
+											// delete message.img_buf; // 删除冗余数据
+										} catch (e) {
+											this.logger.error(`WeChatPadPro Trigger: 语音转换失败: ${e.message}`);
+											// 如果转换失败，保留原始 silk base64 数据
+											message.msgContent = Data.Base64;
+										}
+									} else {
+										this.logger.error(
+											`WeChatPadPro Trigger: 下载语音失败，Code: ${Code}, Data: ${JSON.stringify(Data)}`,
+										);
+									}
+								} catch (error) {
+									this.logger.error(`WeChatPadPro Trigger: 下载语音时发生错误: ${error.message}`);
+								}
+								break;
+							case MsgType.EmojiOrVideo:
 								break;
 							default:
 								break;
