@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "@types/node-wav": "^0.0.4",
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
@@ -56,6 +57,10 @@
   "dependencies": {
     "@types/ws": "^8.18.1",
     "@types/xml2js": "^0.4.14",
+    "node-wav": "^0.0.2",
+    "pcm-util": "^3.0.0",
+    "silk-wasm": "^3.0.0",
+    "wavefile": "^11.0.0",
     "ws": "^8.18.2",
     "xml2js": "^0.6.2"
   }
